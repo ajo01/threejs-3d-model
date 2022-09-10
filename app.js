@@ -1,3 +1,20 @@
+document.addEventListener("mousemove", onDocumentMouseMove);
+
+let mouseX = 0,
+  mouseY = 0,
+  targetX = 0,
+  targetY = 0;
+
+const windowHalfX = window.innerWidth / 2;
+const windowHalfY = window.innerHeight / 2;
+
+function onDocumentMouseMove(event) {
+  mouseX = event.clientX - windowHalfX;
+  mouseY = event.clientY - windowHalfY;
+}
+
+const clock = new THREE.Clock();
+
 //Variables for setup
 
 let container;
@@ -36,10 +53,31 @@ function init() {
 
   //Load Model
   let loader = new THREE.GLTFLoader();
-  loader.load("./house/scene.gltf", function(gltf) {
+  loader.load("./house/scene.gltf", function (gltf) {
     scene.add(gltf.scene);
     house = gltf.scene.children[0];
-    animate();
+    // animate();
+
+    const tick = () => {
+      targetX = mouseX * 0.001;
+      targetY = mouseY * 0.001;
+
+      const elapsedTime = clock.getElapsedTime();
+
+      // Update objects
+      gltf.scene.rotation.y = 0.5 * elapsedTime;
+
+      gltf.scene.rotation.x += 0.05 * (targetY - gltf.scene.rotation.x);
+      gltf.scene.rotation.y += 0.5 * (targetX - gltf.scene.rotation.y);
+
+      // Render
+      renderer.render(scene, camera);
+
+      // Call tick again on the next frame
+      window.requestAnimationFrame(tick);
+    };
+
+    tick();
   });
 }
 
